@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dot Matrix Sci-Fi Text</title>
+  <title>Dot Matrix Multi-Line Sci-Fi Animator</title>
   <style>
     * {
       box-sizing: border-box;
@@ -11,7 +11,7 @@
       padding: 0;
     }
     body {
-      background-color: #08090d;
+      background-color: #07080c;
       color: #00ffcc;
       font-family: 'Courier New', Courier, monospace;
       display: flex;
@@ -19,126 +19,314 @@
       align-items: center;
       justify-content: center;
       min-height: 100vh;
-      overflow: hidden;
+      padding: 15px;
+      overflow-x: hidden;
+    }
+    .main-wrapper {
+      width: 100%;
+      max-width: 900px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+    .header-title {
+      font-size: 1.1rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      text-shadow: 0 0 8px rgba(0, 255, 204, 0.4);
+      opacity: 0.9;
     }
     .canvas-container {
       position: relative;
-      width: 90vw;
-      max-width: 800px;
-      height: 300px;
-      border: 1px solid rgba(0, 255, 204, 0.2);
-      border-radius: 8px;
-      box-shadow: 0 0 20px rgba(0, 255, 204, 0.1);
-      background: radial-gradient(circle at center, #0d1117 0%, #05070a 100%);
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      width: 100%;
+      height: 380px;
+      border: 1px solid rgba(0, 255, 204, 0.25);
+      border-radius: 10px;
+      box-shadow: 0 0 25px rgba(0, 255, 204, 0.12), inset 0 0 15px rgba(0, 0, 0, 0.8);
+      background: radial-gradient(circle at center, #0f131d 0%, #05070a 100%);
+      overflow: hidden;
+    }
+    .canvas-container::before {
+      content: "";
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%),
+                  linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+      background-size: 100% 4px, 6px 100%;
+      pointer-events: none;
+      z-index: 2;
     }
     canvas {
       width: 100%;
       height: 100%;
       display: block;
+      position: relative;
+      z-index: 1;
     }
-    .controls {
-      margin-top: 20px;
+    .editor-card {
+      width: 100%;
+      background: rgba(13, 17, 23, 0.85);
+      border: 1px solid rgba(0, 255, 204, 0.2);
+      border-radius: 10px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      backdrop-filter: blur(8px);
+    }
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    label {
+      font-size: 0.8rem;
+      letter-spacing: 1px;
+      color: rgba(0, 255, 204, 0.8);
+    }
+    textarea {
+      width: 100%;
+      height: 80px;
+      background: #05070a;
+      border: 1px solid rgba(0, 255, 204, 0.3);
+      border-radius: 6px;
+      color: #00ffcc;
+      font-family: inherit;
+      font-size: 0.95rem;
+      padding: 10px;
+      resize: vertical;
+      outline: none;
+      box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.8);
+    }
+    textarea:focus {
+      border-color: #00ffcc;
+      box-shadow: 0 0 10px rgba(0, 255, 204, 0.3);
+    }
+    .controls-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .option-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    select, input[type="color"] {
+      background: #05070a;
+      border: 1px solid rgba(0, 255, 204, 0.3);
+      color: #00ffcc;
+      padding: 6px 10px;
+      border-radius: 4px;
+      font-family: inherit;
+      outline: none;
+      cursor: pointer;
     }
     button {
       background: transparent;
       color: #00ffcc;
       border: 1px solid #00ffcc;
-      padding: 10px 20px;
+      padding: 10px 22px;
       font-family: inherit;
-      font-size: 14px;
+      font-size: 0.85rem;
       letter-spacing: 1.5px;
-      border-radius: 4px;
+      border-radius: 6px;
       cursor: pointer;
-      box-shadow: 0 0 10px rgba(0, 255, 204, 0.2);
+      box-shadow: 0 0 12px rgba(0, 255, 204, 0.2);
       transition: all 0.2s ease;
+      font-weight: bold;
     }
     button:active {
       transform: scale(0.96);
-      background: rgba(0, 255, 204, 0.2);
+      background: rgba(0, 255, 204, 0.25);
     }
   </style>
 </head>
 <body>
 
-  <div class="canvas-container">
-    <canvas id="matrixCanvas"></canvas>
-  </div>
+  <div class="main-wrapper">
+    <div class="header-title">⚡ MATRIX_NEON_GRID v2.0</div>
 
-  <div class="controls">
-    <button onclick="startAnimation()">▶ REPLAY ANIMATION</button>
+    <div class="canvas-container">
+      <canvas id="matrixCanvas"></canvas>
+    </div>
+
+    <div class="editor-card">
+      <div class="input-group">
+        <label for="textInput">EDIT TEXT (Use Enter for new lines):</label>
+        <textarea id="textInput" placeholder="Write your text or long sentence here...">SYSTEM ONLINE&#10;MULTI-LINE DOT ANIMATOR&#10;READY FOR DEPLOYMENT</textarea>
+      </div>
+
+      <div class="controls-row">
+        <div class="option-group">
+          <label for="colorPicker">COLOR:</label>
+          <input type="color" id="colorPicker" value="#00ffcc">
+        </div>
+
+        <div class="option-group">
+          <label for="dotDensity">GRID DENSITY:</label>
+          <select id="dotDensity">
+            <option value="auto" selected>Auto-Adaptive (Best Legibility)</option>
+            <option value="4">Fine Matrix (Sharp)</option>
+            <option value="6">Standard Matrix</option>
+            <option value="8">Coarse Matrix</option>
+          </select>
+        </div>
+
+        <button onclick="startAnimation()">▶ REPLAY ANIMATION</button>
+      </div>
+    </div>
   </div>
 
   <script>
-    // ===================================================
-    // ✏️ EDIT YOUR TEXT AND DISPLAY SETTINGS HERE:
-    // ===================================================
     const CONFIG = {
-      text: "Hello! Good Morning :) I hope your class and day goes becomes good, Idol! <3",       // The message to display
-      color: "#ff007f",        // Cyan: #00ffcc | Green: #00ff66 | Pink: #ff007f | Amber: #ffb700
-      dotRadius: 2.5,         // Radius of each dot (px)
-      dotSpacing: 6,          // Grid spacing (lower = higher dot density)
-      dotsPerFrame: 1.5,        // Speed (how many dots reveal per frame)
-      glowBlur: 5            // Neon glow blur radius
+      text: "SYSTEM ONLINE\nMULTI-LINE DOT ANIMATOR\nREADY FOR DEPLOYMENT",
+      color: "#00ffcc",
+      dotsPerFrame: 22
     };
-    // ===================================================
 
     const canvas = document.getElementById('matrixCanvas');
     const ctx = canvas.getContext('2d');
+    const textInput = document.getElementById('textInput');
+    const colorPicker = document.getElementById('colorPicker');
+    const dotDensitySelect = document.getElementById('dotDensity');
+
     let points = [];
     let visibleCount = 0;
     let animId = null;
+    let currentDotRadius = 2.5;
+    let currentGlowBlur = 6;
 
-    function resizeCanvas() {
-      canvas.width = canvas.offsetWidth;
-      canvas.height = canvas.offsetHeight;
+    textInput.value = CONFIG.text;
+    colorPicker.value = CONFIG.color;
+
+    function wrapText(offCtx, text, maxLineWidth) {
+      const paragraphs = text.split('\n');
+      const lines = [];
+
+      for (let p of paragraphs) {
+        if (!p.trim()) {
+          lines.push('');
+          continue;
+        }
+        const words = p.split(' ');
+        let currentLine = words[0];
+
+        for (let i = 1; i < words.length; i++) {
+          const word = words[i];
+          const testLine = currentLine + " " + word;
+          const testWidth = offCtx.measureText(testLine).width;
+
+          if (testWidth <= maxLineWidth) {
+            currentLine = testLine;
+          } else {
+            lines.push(currentLine);
+            currentLine = word;
+          }
+        }
+        lines.push(currentLine);
+      }
+      return lines;
     }
 
     function generatePoints() {
+      const currentText = textInput.value || " ";
+      const densitySetting = dotDensitySelect.value;
+
       const offCanvas = document.createElement('canvas');
       const offCtx = offCanvas.getContext('2d');
       offCanvas.width = canvas.width;
       offCanvas.height = canvas.height;
 
-      // Calculate font size dynamically based on text length and canvas width
-      const fontSize = Math.min(canvas.width / (CONFIG.text.length * 0.65), canvas.height * 0.5);
-      offCtx.font = `900 ${fontSize}px "Courier New", monospace`;
+      const maxTextWidth = canvas.width * 0.88;
+      const maxTextHeight = canvas.height * 0.82;
+
+      // Start with a large font size and scale down until all lines fit comfortably
+      let fontSize = 56;
+      let lines = [];
+      let totalHeight = 0;
+      let lineHeight = 0;
+
+      do {
+        // Use an ultra-bold display font so character strokes are solid and full
+        offCtx.font = `900 ${fontSize}px "Arial Black", "Impact", "Courier New", sans-serif`;
+        lines = wrapText(offCtx, currentText, maxTextWidth);
+        lineHeight = fontSize * 1.2;
+        totalHeight = lines.length * lineHeight;
+
+        if (totalHeight > maxTextHeight || lines.some(l => offCtx.measureText(l).width > maxTextWidth)) {
+          fontSize -= 2;
+        } else {
+          break;
+        }
+      } while (fontSize > 12);
+
+      // Adaptive spacing: scale grid density proportionally with the calculated font size
+      let spacing = 6;
+      if (densitySetting === 'auto') {
+        spacing = Math.max(3, Math.min(7, Math.floor(fontSize / 6.5)));
+      } else {
+        spacing = parseInt(densitySetting, 10);
+      }
+
+      // Proportional dot radius and glow to prevent blurred blobs on small text
+      currentDotRadius = Math.max(1.2, spacing * 0.38);
+      currentGlowBlur = Math.min(8, currentDotRadius * 2.5);
+
+      // Render bold text with stroke outline for extra pixel density
+      offCtx.font = `900 ${fontSize}px "Arial Black", "Impact", "Courier New", sans-serif`;
       offCtx.fillStyle = '#ffffff';
+      offCtx.strokeStyle = '#ffffff';
+      offCtx.lineWidth = Math.max(1, fontSize * 0.05);
       offCtx.textAlign = 'center';
       offCtx.textBaseline = 'middle';
-      offCtx.fillText(CONFIG.text, offCanvas.width / 2, offCanvas.height / 2);
 
+      const startY = (offCanvas.height - totalHeight) / 2 + (lineHeight / 2);
+
+      lines.forEach((line, index) => {
+        const y = startY + (index * lineHeight);
+        offCtx.fillText(line, offCanvas.width / 2, y);
+        offCtx.strokeText(line, offCanvas.width / 2, y);
+      });
+
+      // Sample pixels using sensitive alpha threshold (>40) to capture letter curves
       const imgData = offCtx.getImageData(0, 0, offCanvas.width, offCanvas.height);
       points = [];
 
-      // Sample pixels on a structured grid
-      for (let x = 0; x < offCanvas.width; x += CONFIG.dotSpacing) {
-        for (let y = 0; y < offCanvas.height; y += CONFIG.dotSpacing) {
-          const index = (y * offCanvas.width + x) * 4;
-          if (imgData.data[index + 3] > 128) {
+      for (let y = 0; y < offCanvas.height; y += spacing) {
+        for (let x = 0; x < offCanvas.width; x += spacing) {
+          const idx = (y * offCanvas.width + x) * 4;
+          if (imgData.data[idx + 3] > 40) {
             points.push({ x, y });
           }
         }
       }
 
-      // Sort points left-to-right (with slight vertical jitter) for a scanline reveal
-      points.sort((a, b) => (a.x + a.y * 0.1) - (b.x + b.y * 0.1));
+      // Sort points line-by-line (top-to-bottom, left-to-right) for an easy-to-read reveal
+      points.sort((a, b) => {
+        const rowA = Math.floor(a.y / spacing);
+        const rowB = Math.floor(b.y / spacing);
+        if (rowA !== rowB) return rowA - rowB;
+        return a.x - b.x;
+      });
     }
 
     function animate() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      ctx.fillStyle = CONFIG.color;
-      ctx.shadowColor = CONFIG.color;
-      ctx.shadowBlur = CONFIG.glowBlur;
+      const currentColor = colorPicker.value;
+      ctx.fillStyle = currentColor;
+      ctx.shadowColor = currentColor;
+      ctx.shadowBlur = currentGlowBlur;
 
       const currentPoints = points.slice(0, visibleCount);
       for (let i = 0; i < currentPoints.length; i++) {
         const pt = currentPoints[i];
         ctx.beginPath();
-        ctx.arc(pt.x, pt.y, CONFIG.dotRadius, 0, Math.PI * 2);
+        ctx.arc(pt.x, pt.y, currentDotRadius, 0, Math.PI * 2);
         ctx.fill();
       }
 
@@ -146,6 +334,11 @@
         visibleCount += CONFIG.dotsPerFrame;
         animId = requestAnimationFrame(animate);
       }
+    }
+
+    function resizeCanvas() {
+      canvas.width = canvas.offsetWidth;
+      canvas.height = canvas.offsetHeight;
     }
 
     function startAnimation() {
@@ -156,6 +349,9 @@
       animate();
     }
 
+    textInput.addEventListener('input', startAnimation);
+    colorPicker.addEventListener('input', startAnimation);
+    dotDensitySelect.addEventListener('change', startAnimation);
     window.addEventListener('resize', startAnimation);
     window.addEventListener('load', startAnimation);
   </script>
