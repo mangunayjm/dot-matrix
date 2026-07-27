@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Message Animator</title>
+  <title>Dot Matrix Multi-Line Sci-Fi Animator</title>
   <style>
     * {
       box-sizing: border-box;
@@ -40,12 +40,23 @@
     .canvas-container {
       position: relative;
       width: 100%;
-      height: 380px;
+      height: 48vh;
+      min-height: 280px;
+      max-height: 500px;
       border: 1px solid rgba(0, 255, 204, 0.25);
       border-radius: 10px;
       box-shadow: 0 0 25px rgba(0, 255, 204, 0.12), inset 0 0 15px rgba(0, 0, 0, 0.8);
       background: radial-gradient(circle at center, #0f131d 0%, #05070a 100%);
       overflow: hidden;
+      transition: all 0.3s ease;
+    }
+    .canvas-container.fullscreen {
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      max-height: none;
+      z-index: 9999;
+      border-radius: 0;
+      border: none;
     }
     .canvas-container::before {
       content: "";
@@ -56,6 +67,11 @@
       background-size: 100% 4px, 6px 100%;
       pointer-events: none;
       z-index: 2;
+      opacity: 1;
+      transition: opacity 0.3s ease;
+    }
+    .canvas-container.no-scanlines::before {
+      opacity: 0;
     }
     canvas {
       width: 100%;
@@ -157,7 +173,7 @@
     <div class="editor-card">
       <div class="input-group">
         <label for="textInput">EDIT TEXT (Use Enter for new lines):</label>
-        <textarea id="textInput" placeholder="Write your text or long sentence here...">SYSTEM ONLINE&#10;MULTI-LINE DOT ANIMATOR&#10;READY FOR DEPLOYMENT</textarea>
+        <textarea id="textInput" placeholder="Write your text or long sentence here...">Good Morning! I hope your class and day is good today, Idol <3! </textarea>
       </div>
 
       <div class="controls-row">
@@ -176,15 +192,17 @@
           </select>
         </div>
 
-        <button onclick="startAnimation()">▶ REPLAY ANIMATION</button>
+        <button onclick="startAnimation()">▶ REPLAY</button>
+        <button onclick="toggleScanlines()" id="scanlineBtn">☀️ BRIGHT MODE</button>
+        <button onclick="toggleFullscreen()" id="fullscreenBtn">📺 FULLSCREEN</button>
       </div>
     </div>
   </div>
 
   <script>
     const CONFIG = {
-      text: "I hope your class and your day goes well, Idol <3!",
-      color: "#00ffcc",
+      text: "SYSTEM ONLINE\nMULTI-LINE DOT ANIMATOR\nREADY FOR DEPLOYMENT",
+      color: "#ff007f",
       dotsPerFrame: 5
     };
 
@@ -199,6 +217,7 @@
     let animId = null;
     let currentDotRadius = 2.5;
     let currentGlowBlur = 6;
+    let dpr = 1;
 
     textInput.value = CONFIG.text;
     colorPicker.value = CONFIG.color;
@@ -337,8 +356,40 @@
     }
 
     function resizeCanvas() {
-      canvas.width = canvas.offsetWidth;
-      canvas.height = canvas.offsetHeight;
+      dpr = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+      
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+      
+      // Reset transform then scale context to render tack-sharp on high-DPI phone screens
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.scale(dpr, dpr);
+    }
+
+    function toggleFullscreen() {
+      const container = document.querySelector('.canvas-container');
+      const btn = document.getElementById('fullscreenBtn');
+      container.classList.toggle('fullscreen');
+      
+      if (container.classList.contains('fullscreen')) {
+        btn.textContent = '❌ EXIT FULLSCREEN';
+      } else {
+        btn.textContent = '📺 FULLSCREEN';
+      }
+      setTimeout(startAnimation, 100);
+    }
+
+    function toggleScanlines() {
+      const container = document.querySelector('.canvas-container');
+      const btn = document.getElementById('scanlineBtn');
+      container.classList.toggle('no-scanlines');
+      
+      if (container.classList.contains('no-scanlines')) {
+        btn.textContent = '📺 SCANLINES ON';
+      } else {
+        btn.textContent = '☀️ BRIGHT MODE';
+      }
     }
 
     function startAnimation() {
