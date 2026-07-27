@@ -361,10 +361,13 @@
       
       canvas.width = rect.width * dpr;
       canvas.height = rect.height * dpr;
-      
-      // Reset transform then scale context to render tack-sharp on high-DPI phone screens
+
+      // NOTE: points are generated in physical-pixel space (canvas.width/height,
+      // which already includes dpr), and drawn with ctx.arc(pt.x, pt.y, ...) using
+      // those same physical coordinates. So the context must NOT also be scaled by
+      // dpr here — that would double-apply the scale factor and squeeze the whole
+      // animation into a corner of the canvas on any high-DPI (retina/phone) screen.
       ctx.setTransform(1, 0, 0, 1, 0, 0);
-      ctx.scale(dpr, dpr);
     }
 
     function toggleFullscreen() {
